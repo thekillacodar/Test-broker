@@ -90,6 +90,7 @@
                         <div class="hidden md:flex space-x-6">
                             <button id="marketBtn" class="nav-btn text-blue-600 border-b-2 border-blue-600 pb-4 font-medium">Market</button>
                             <button id="portfolioBtn" class="nav-btn text-gray-500 hover:text-gray-700 pb-4">Portfolio</button>
+                            <button id="autoTradeBtn" class="nav-btn text-gray-500 hover:text-gray-700 pb-4">Auto Trade</button>
                             <button id="adminBtn" class="nav-btn text-gray-500 hover:text-gray-700 pb-4" style="display: none;">Admin</button>
                         </div>
                     </div>
@@ -175,6 +176,109 @@
                             <p>No cryptocurrency holdings yet.</p>
                             <p class="text-sm mt-2">Start trading to build your portfolio!</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto Trade View -->
+        <div id="autoTradeView" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="display: none;">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Auto Trading & Bots</h1>
+            
+            <!-- Trading Bot Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Bot Status</h3>
+                        <div id="botStatusIndicator" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 mb-2" id="botStatus">Inactive</div>
+                    <div class="text-sm text-gray-600">Active Bots: <span id="activeBots">0</span></div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Performance</h3>
+                    <div class="text-2xl font-bold text-green-600" id="botProfit">+$0.00</div>
+                    <div class="text-sm text-gray-600">Total Trades: <span id="totalTrades">0</span></div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Bot Balance</h3>
+                    <div class="text-2xl font-bold text-gray-900" id="botBalance">$0.00</div>
+                    <div class="text-sm text-gray-600">Allocated for trading</div>
+                </div>
+            </div>
+
+            <!-- Create New Bot -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Create Trading Bot</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bot Name</label>
+                        <input type="text" id="botName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="My Trading Bot">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cryptocurrency</label>
+                        <select id="botCrypto" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="SOL">Solana (SOL)</option>
+                            <option value="DOT">Polkadot (DOT)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Strategy</label>
+                        <select id="botStrategy" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="dca">Dollar Cost Averaging</option>
+                            <option value="grid">Grid Trading</option>
+                            <option value="momentum">Momentum Trading</option>
+                            <option value="arbitrage">Arbitrage</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget ($)</label>
+                        <input type="number" id="botBudget" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="1000" min="100">
+                    </div>
+                </div>
+                
+                <!-- Advanced Settings -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Buy Threshold (%)</label>
+                        <input type="number" id="buyThreshold" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="-2" step="0.1">
+                        <p class="text-xs text-gray-500 mt-1">Buy when price drops by this percentage</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sell Threshold (%)</label>
+                        <input type="number" id="sellThreshold" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="3" step="0.1">
+                        <p class="text-xs text-gray-500 mt-1">Sell when price rises by this percentage</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Trade Amount ($)</label>
+                        <input type="number" id="maxTradeAmount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="100" min="10">
+                        <p class="text-xs text-gray-500 mt-1">Maximum amount per trade</p>
+                    </div>
+                </div>
+                
+                <button id="createBotBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Create Bot</button>
+            </div>
+
+            <!-- Active Bots -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">Your Trading Bots</h3>
+                    <button id="startAllBotsBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">Start All Bots</button>
+                </div>
+                <div id="botsContainer" class="p-6">
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-medium">No trading bots created yet</p>
+                        <p class="text-sm mt-2">Create your first bot to start automated trading</p>
                     </div>
                 </div>
             </div>
@@ -298,6 +402,10 @@
         // User management system
         let currentUser = null;
         let users = JSON.parse(localStorage.getItem('cryptoUsers') || '{}');
+        
+        // Trading bot system
+        let tradingBots = JSON.parse(localStorage.getItem('tradingBots') || '{}');
+        let botIntervals = {};
 
         // Sample cryptocurrency data
         let cryptoData = [
@@ -540,7 +648,7 @@
 
         // Navigation functionality
         const navButtons = document.querySelectorAll('.nav-btn');
-        const views = ['marketView', 'portfolioView', 'adminView'];
+        const views = ['marketView', 'portfolioView', 'autoTradeView', 'adminView'];
 
         navButtons.forEach((btn, index) => {
             btn.addEventListener('click', () => {
@@ -723,10 +831,255 @@
             });
         }
 
+        // Trading Bot Functions
+        function createTradingBot() {
+            const name = document.getElementById('botName').value;
+            const crypto = document.getElementById('botCrypto').value;
+            const strategy = document.getElementById('botStrategy').value;
+            const budget = parseFloat(document.getElementById('botBudget').value);
+            const buyThreshold = parseFloat(document.getElementById('buyThreshold').value) || -2;
+            const sellThreshold = parseFloat(document.getElementById('sellThreshold').value) || 3;
+            const maxTradeAmount = parseFloat(document.getElementById('maxTradeAmount').value) || 100;
+
+            if (!name || !budget || budget > currentUser.balance) {
+                alert('Please fill all fields and ensure you have sufficient balance');
+                return;
+            }
+
+            const botId = Date.now().toString();
+            const bot = {
+                id: botId,
+                name: name,
+                crypto: crypto,
+                strategy: strategy,
+                budget: budget,
+                buyThreshold: buyThreshold,
+                sellThreshold: sellThreshold,
+                maxTradeAmount: maxTradeAmount,
+                isActive: false,
+                profit: 0,
+                trades: 0,
+                lastPrice: 0,
+                holdings: 0,
+                createdAt: new Date().toISOString(),
+                userId: currentUser.email
+            };
+
+            if (!tradingBots[currentUser.email]) {
+                tradingBots[currentUser.email] = {};
+            }
+            tradingBots[currentUser.email][botId] = bot;
+
+            // Deduct budget from user balance
+            currentUser.balance -= budget;
+            users[currentUser.email] = currentUser;
+
+            localStorage.setItem('tradingBots', JSON.stringify(tradingBots));
+            localStorage.setItem('cryptoUsers', JSON.stringify(users));
+
+            updateUserInterface();
+            updateBotInterface();
+            clearBotForm();
+            alert(`Bot "${name}" created successfully!`);
+        }
+
+        function clearBotForm() {
+            document.getElementById('botName').value = '';
+            document.getElementById('botBudget').value = '';
+            document.getElementById('buyThreshold').value = '';
+            document.getElementById('sellThreshold').value = '';
+            document.getElementById('maxTradeAmount').value = '';
+        }
+
+        function updateBotInterface() {
+            if (!currentUser || !tradingBots[currentUser.email]) {
+                return;
+            }
+
+            const userBots = tradingBots[currentUser.email];
+            const activeBots = Object.values(userBots).filter(bot => bot.isActive).length;
+            const totalProfit = Object.values(userBots).reduce((sum, bot) => sum + bot.profit, 0);
+            const totalTrades = Object.values(userBots).reduce((sum, bot) => sum + bot.trades, 0);
+            const totalBotBalance = Object.values(userBots).reduce((sum, bot) => sum + bot.budget, 0);
+
+            document.getElementById('activeBots').textContent = activeBots;
+            document.getElementById('botProfit').textContent = `${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(2)}`;
+            document.getElementById('totalTrades').textContent = totalTrades;
+            document.getElementById('botBalance').textContent = `$${totalBotBalance.toFixed(2)}`;
+            document.getElementById('botStatus').textContent = activeBots > 0 ? 'Active' : 'Inactive';
+            
+            const statusIndicator = document.getElementById('botStatusIndicator');
+            statusIndicator.className = `w-3 h-3 rounded-full ${activeBots > 0 ? 'bg-green-500' : 'bg-red-500'}`;
+
+            displayBots();
+        }
+
+        function displayBots() {
+            const container = document.getElementById('botsContainer');
+            const userBots = tradingBots[currentUser.email] || {};
+
+            if (Object.keys(userBots).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-medium">No trading bots created yet</p>
+                        <p class="text-sm mt-2">Create your first bot to start automated trading</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let botsHTML = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">';
+            Object.values(userBots).forEach(bot => {
+                const crypto = cryptoData.find(c => c.symbol === bot.crypto);
+                const profitClass = bot.profit >= 0 ? 'text-green-600' : 'text-red-600';
+                
+                botsHTML += `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">${bot.name}</h4>
+                                <div class="text-sm text-gray-500">${crypto ? crypto.name : bot.crypto} • ${bot.strategy}</div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 text-xs rounded-full ${bot.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                    ${bot.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                                <button onclick="toggleBot('${bot.id}')" class="px-3 py-1 text-xs rounded ${bot.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} transition-colors">
+                                    ${bot.isActive ? 'Stop' : 'Start'}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <div class="text-gray-600">Budget</div>
+                                <div class="font-medium">$${bot.budget.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Profit/Loss</div>
+                                <div class="font-medium ${profitClass}">${bot.profit >= 0 ? '+' : ''}$${bot.profit.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Trades</div>
+                                <div class="font-medium">${bot.trades}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Holdings</div>
+                                <div class="font-medium">${bot.holdings.toFixed(6)} ${bot.crypto}</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="text-xs text-gray-500">
+                                Buy: ${bot.buyThreshold}% | Sell: ${bot.sellThreshold}% | Max: $${bot.maxTradeAmount}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            botsHTML += '</div>';
+            container.innerHTML = botsHTML;
+        }
+
+        function toggleBot(botId) {
+            const bot = tradingBots[currentUser.email][botId];
+            bot.isActive = !bot.isActive;
+
+            if (bot.isActive) {
+                startBot(bot);
+            } else {
+                stopBot(botId);
+            }
+
+            localStorage.setItem('tradingBots', JSON.stringify(tradingBots));
+            updateBotInterface();
+        }
+
+        function startBot(bot) {
+            const crypto = cryptoData.find(c => c.symbol === bot.crypto);
+            bot.lastPrice = crypto.price;
+
+            botIntervals[bot.id] = setInterval(() => {
+                executeBotStrategy(bot);
+            }, 5000); // Check every 5 seconds
+        }
+
+        function stopBot(botId) {
+            if (botIntervals[botId]) {
+                clearInterval(botIntervals[botId]);
+                delete botIntervals[botId];
+            }
+        }
+
+        function executeBotStrategy(bot) {
+            const crypto = cryptoData.find(c => c.symbol === bot.crypto);
+            const currentPrice = crypto.price;
+            const priceChange = ((currentPrice - bot.lastPrice) / bot.lastPrice) * 100;
+
+            // Simple strategy implementation
+            if (priceChange <= bot.buyThreshold && bot.budget >= bot.maxTradeAmount) {
+                // Buy signal
+                const tradeAmount = Math.min(bot.maxTradeAmount, bot.budget);
+                const units = tradeAmount / currentPrice;
+                
+                bot.budget -= tradeAmount;
+                bot.holdings += units;
+                bot.trades++;
+                bot.lastPrice = currentPrice;
+
+                // Simulate some profit/loss
+                const randomFactor = (Math.random() - 0.5) * 0.1; // ±5% random factor
+                bot.profit += tradeAmount * randomFactor;
+
+                updateBotInterface();
+                localStorage.setItem('tradingBots', JSON.stringify(tradingBots));
+            } else if (priceChange >= bot.sellThreshold && bot.holdings > 0) {
+                // Sell signal
+                const sellAmount = Math.min(bot.holdings, bot.maxTradeAmount / currentPrice);
+                const tradeValue = sellAmount * currentPrice;
+                
+                bot.holdings -= sellAmount;
+                bot.budget += tradeValue;
+                bot.trades++;
+                bot.lastPrice = currentPrice;
+
+                // Simulate some profit/loss
+                const randomFactor = (Math.random() - 0.5) * 0.1; // ±5% random factor
+                bot.profit += tradeValue * randomFactor;
+
+                updateBotInterface();
+                localStorage.setItem('tradingBots', JSON.stringify(tradingBots));
+            }
+        }
+
+        function startAllBots() {
+            const userBots = tradingBots[currentUser.email] || {};
+            Object.values(userBots).forEach(bot => {
+                if (!bot.isActive) {
+                    bot.isActive = true;
+                    startBot(bot);
+                }
+            });
+            localStorage.setItem('tradingBots', JSON.stringify(tradingBots));
+            updateBotInterface();
+        }
+
         // Initialize portfolio chart when portfolio view is first shown
         document.getElementById('portfolioBtn').addEventListener('click', () => {
             setTimeout(initPortfolioChart, 100);
         }, { once: true });
+
+        // Initialize bot interface when auto trade view is first shown
+        document.getElementById('autoTradeBtn').addEventListener('click', () => {
+            updateBotInterface();
+        });
+
+        // Bot event listeners
+        document.getElementById('createBotBtn').addEventListener('click', createTradingBot);
+        document.getElementById('startAllBotsBtn').addEventListener('click', startAllBots);
 
         // Start real-time updates every 3 seconds
         setInterval(updatePrices, 3000);
@@ -745,5 +1098,5 @@
             localStorage.setItem('cryptoUsers', JSON.stringify(users));
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'964fd7e1f6bae57b',t:'MTc1MzQ5MDQwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-          </html>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'964fe86de0bc947c',t:'MTc1MzQ5MTA3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
