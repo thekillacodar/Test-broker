@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoTrade Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .crypto-card:hover { transform: translateY(-2px); }
+        .price-up { color: #10b981; }
+        .price-down { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Authentication Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-lg">CT</span>
+                </div>
+                <h2 id="authTitle" class="text-2xl font-bold text-gray-900">Welcome to CryptoTrade Pro</h2>
+                <p class="text-gray-600 mt-2">Sign in to your account or create a new one</p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <form id="loginFormElement" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign In</button>
+                </form>
+                <div class="mt-4 text-center">
+                    <span class="text-gray-600">Don't have an account? </span>
+                    <button id="showSignup" class="text-blue-600 hover:text-blue-700 font-medium">Sign up</button>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <form id="signupFormElement" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input type="text" id="signupName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your full name" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="signupEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="signupPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Create a password" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Initial Deposit ($)</label>
+                        <input type="number" id="initialDeposit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="1000" min="100" value="1000" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Create Account</button>
+                </form>
+                <div class="mt-4 text-center">
+                    <span class="text-gray-600">Already have an account? </span>
+                    <button id="showLogin" class="text-blue-600 hover:text-blue-700 font-medium">Sign in</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (hidden until authenticated) -->
+    <div id="mainApp" style="display: none;">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">CT</span>
+                            </div>
+                            <span class="ml-2 text-xl font-semibold text-gray-900">CryptoTrade Pro</span>
+                        </div>
+                        <div class="hidden md:flex space-x-6">
+                            <button id="marketBtn" class="nav-btn text-blue-600 border-b-2 border-blue-600 pb-4 font-medium">Market</button>
+                            <button id="portfolioBtn" class="nav-btn text-gray-500 hover:text-gray-700 pb-4">Portfolio</button>
+                            <button id="adminBtn" class="nav-btn text-gray-500 hover:text-gray-700 pb-4" style="display: none;">Admin</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <span id="userGreeting" class="font-medium"></span>
+                        </div>
+                        <div class="text-sm text-gray-600">Balance: <span id="userBalance" class="font-semibold text-gray-900">$0.00</span></div>
+                        <button id="depositBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">Deposit</button>
+                        <button id="logoutBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Market View -->
+        <div id="marketView" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Market Overview -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Market Overview</h1>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-1">Total Market Cap</div>
+                        <div class="text-2xl font-bold text-gray-900">$1.2T</div>
+                        <div class="text-sm text-green-600">+2.4% (24h)</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-1">24h Volume</div>
+                        <div class="text-2xl font-bold text-gray-900">$89.2B</div>
+                        <div class="text-sm text-red-600">-1.2% (24h)</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-1">Active Cryptocurrencies</div>
+                        <div class="text-2xl font-bold text-gray-900">2,847</div>
+                        <div class="text-sm text-gray-500">+12 new</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cryptocurrency List -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Top Cryptocurrencies</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">24h Change</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Cap</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (24h)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cryptoTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Crypto rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio View -->
+        <div id="portfolioView" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="display: none;">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Your Portfolio</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Portfolio Performance</h3>
+                        <div class="mb-4">
+                            <div class="text-3xl font-bold text-gray-900" id="portfolioValue">$0.00</div>
+                            <div class="text-sm" id="portfolioChange">+$0.00 (0.00%)</div>
+                        </div>
+                        <canvas id="portfolioChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Holdings</h3>
+                    <div id="userHoldings" class="space-y-4">
+                        <div class="text-center text-gray-500 py-8">
+                            <p>No cryptocurrency holdings yet.</p>
+                            <p class="text-sm mt-2">Start trading to build your portfolio!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div id="adminView" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="display: none;">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- User Management -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">User Management</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <div class="font-medium">Total Users</div>
+                                <div class="text-2xl font-bold text-blue-600" id="totalUsers">1</div>
+                            </div>
+                            <div class="text-sm text-green-600">+1 today</div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <div class="font-medium">Active Traders</div>
+                                <div class="text-2xl font-bold text-green-600" id="activeTraders">1</div>
+                            </div>
+                            <div class="text-sm text-green-600">+1 today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Trading Engine</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Online</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Market Data Feed</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Online</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Payment Gateway</span>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Maintenance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Management -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Management</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bitcoin Price</label>
+                        <input type="number" id="btcPrice" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="43000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ethereum Price</label>
+                        <input type="number" id="ethPrice" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="2400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cardano Price</label>
+                        <input type="number" id="adaPrice" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="0.45">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="updatePricesBtn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Update Prices</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy/Sell Modal -->
+    <div id="tradeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 id="tradeModalTitle" class="text-xl font-bold text-gray-900 mb-4">Buy Bitcoin</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Amount ($)</label>
+                    <input type="number" id="tradeAmount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="100" min="1">
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <div class="flex justify-between text-sm">
+                        <span>Price per unit:</span>
+                        <span id="tradePricePerUnit">$43,000</span>
+                    </div>
+                    <div class="flex justify-between text-sm mt-1">
+                        <span>You will receive:</span>
+                        <span id="tradeReceiveAmount">0 BTC</span>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button id="confirmTradeBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Confirm Purchase</button>
+                    <button id="cancelTradeBtn" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div id="depositModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Deposit Funds</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Amount ($)</label>
+                    <input type="number" id="depositAmount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="500" min="1">
+                </div>
+                <div class="flex space-x-3">
+                    <button id="confirmDepositBtn" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">Deposit</button>
+                    <button id="cancelDepositBtn" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User management system
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('cryptoUsers') || '{}');
+
+        // Sample cryptocurrency data
+        let cryptoData = [
+            { name: 'Bitcoin', symbol: 'BTC', price: 43000, change: 2.5, marketCap: '840B', volume: '28.5B', icon: '₿', color: 'bg-orange-500' },
+            { name: 'Ethereum', symbol: 'ETH', price: 2400, change: -1.2, marketCap: '290B', volume: '15.2B', icon: 'Ξ', color: 'bg-blue-600' },
+            { name: 'Cardano', symbol: 'ADA', price: 0.45, change: 5.8, marketCap: '15.2B', volume: '1.8B', icon: '₳', color: 'bg-blue-500' },
+            { name: 'Solana', symbol: 'SOL', price: 98.50, change: -3.1, marketCap: '42.8B', volume: '2.1B', icon: '◎', color: 'bg-purple-500' },
+            { name: 'Polkadot', symbol: 'DOT', price: 7.25, change: 1.8, marketCap: '8.9B', volume: '580M', icon: '●', color: 'bg-pink-500' }
+        ];
+
+        // Authentication functions
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('authTitle').textContent = 'Create Your Account';
+        }
+
+        function showLogin() {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('authTitle').textContent = 'Welcome Back';
+        }
+
+        function signup(name, email, password, initialDeposit) {
+            if (users[email]) {
+                alert('User already exists!');
+                return false;
+            }
+
+            users[email] = {
+                name: name,
+                email: email,
+                password: password,
+                balance: parseFloat(initialDeposit),
+                holdings: {},
+                isAdmin: email === 'admin@cryptotrade.com',
+                joinDate: new Date().toISOString()
+            };
+
+            localStorage.setItem('cryptoUsers', JSON.stringify(users));
+            return true;
+        }
+
+        function login(email, password) {
+            const user = users[email];
+            if (user && user.password === password) {
+                currentUser = user;
+                return true;
+            }
+            return false;
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('authModal').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function updateUserInterface() {
+            if (!currentUser) return;
+
+            document.getElementById('userGreeting').textContent = `Hello, ${currentUser.name}`;
+            document.getElementById('userBalance').textContent = `$${currentUser.balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            // Show admin button if user is admin
+            if (currentUser.isAdmin) {
+                document.getElementById('adminBtn').style.display = 'block';
+            }
+
+            updatePortfolioView();
+            updateAdminStats();
+        }
+
+        function updatePortfolioView() {
+            const holdingsContainer = document.getElementById('userHoldings');
+            const holdings = currentUser.holdings;
+            
+            if (Object.keys(holdings).length === 0) {
+                holdingsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <p>No cryptocurrency holdings yet.</p>
+                        <p class="text-sm mt-2">Start trading to build your portfolio!</p>
+                    </div>
+                `;
+                document.getElementById('portfolioValue').textContent = `$${currentUser.balance.toFixed(2)}`;
+                document.getElementById('portfolioChange').textContent = '+$0.00 (0.00%)';
+                return;
+            }
+
+            let totalValue = currentUser.balance;
+            let holdingsHTML = '';
+
+            Object.keys(holdings).forEach(symbol => {
+                const holding = holdings[symbol];
+                const crypto = cryptoData.find(c => c.symbol === symbol);
+                if (crypto) {
+                    const currentValue = holding.amount * crypto.price;
+                    const profitLoss = currentValue - holding.totalInvested;
+                    const profitLossPercent = (profitLoss / holding.totalInvested) * 100;
+                    totalValue += currentValue;
+
+                    holdingsHTML += `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 ${crypto.color} rounded-full flex items-center justify-center text-white text-xs font-bold">${crypto.icon}</div>
+                                <div class="ml-3">
+                                    <div class="font-medium">${crypto.name}</div>
+                                    <div class="text-sm text-gray-500">${holding.amount.toFixed(6)} ${symbol}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-medium">$${currentValue.toFixed(2)}</div>
+                                <div class="text-sm ${profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${profitLoss >= 0 ? '+' : ''}$${profitLoss.toFixed(2)} (${profitLossPercent.toFixed(1)}%)
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            holdingsContainer.innerHTML = holdingsHTML;
+            document.getElementById('portfolioValue').textContent = `$${totalValue.toFixed(2)}`;
+            
+            // Calculate overall change (simplified)
+            const initialInvestment = Object.values(holdings).reduce((sum, h) => sum + h.totalInvested, 0) + currentUser.balance;
+            const change = totalValue - initialInvestment;
+            const changePercent = initialInvestment > 0 ? (change / initialInvestment) * 100 : 0;
+            
+            document.getElementById('portfolioChange').innerHTML = `
+                <span class="${change >= 0 ? 'text-green-600' : 'text-red-600'}">
+                    ${change >= 0 ? '+' : ''}$${change.toFixed(2)} (${changePercent.toFixed(2)}%)
+                </span>
+            `;
+        }
+
+        function updateAdminStats() {
+            if (currentUser && currentUser.isAdmin) {
+                const totalUsers = Object.keys(users).length;
+                const activeTraders = Object.values(users).filter(u => Object.keys(u.holdings).length > 0).length;
+                
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('activeTraders').textContent = activeTraders;
+            }
+        }
+
+        // Trading functions
+        let currentTrade = null;
+
+        function openTradeModal(crypto, action) {
+            currentTrade = { crypto, action };
+            document.getElementById('tradeModal').style.display = 'flex';
+            document.getElementById('tradeModalTitle').textContent = `${action} ${crypto.name}`;
+            document.getElementById('tradePricePerUnit').textContent = `$${crypto.price.toLocaleString()}`;
+            
+            const confirmBtn = document.getElementById('confirmTradeBtn');
+            confirmBtn.textContent = `Confirm ${action}`;
+            confirmBtn.className = `flex-1 ${action === 'Buy' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white py-2 rounded-lg transition-colors`;
+        }
+
+        function calculateTradeAmount() {
+            const amount = parseFloat(document.getElementById('tradeAmount').value) || 0;
+            if (currentTrade && amount > 0) {
+                const units = amount / currentTrade.crypto.price;
+                document.getElementById('tradeReceiveAmount').textContent = `${units.toFixed(6)} ${currentTrade.crypto.symbol}`;
+            } else {
+                document.getElementById('tradeReceiveAmount').textContent = `0 ${currentTrade ? currentTrade.crypto.symbol : ''}`;
+            }
+        }
+
+        function executeTrade() {
+            const amount = parseFloat(document.getElementById('tradeAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            if (currentTrade.action === 'Buy') {
+                if (amount > currentUser.balance) {
+                    alert('Insufficient balance');
+                    return;
+                }
+
+                const units = amount / currentTrade.crypto.price;
+                currentUser.balance -= amount;
+
+                if (!currentUser.holdings[currentTrade.crypto.symbol]) {
+                    currentUser.holdings[currentTrade.crypto.symbol] = {
+                        amount: 0,
+                        totalInvested: 0
+                    };
+                }
+
+                currentUser.holdings[currentTrade.crypto.symbol].amount += units;
+                currentUser.holdings[currentTrade.crypto.symbol].totalInvested += amount;
+
+                alert(`Successfully bought ${units.toFixed(6)} ${currentTrade.crypto.symbol} for $${amount}`);
+            }
+
+            // Save user data
+            users[currentUser.email] = currentUser;
+            localStorage.setItem('cryptoUsers', JSON.stringify(users));
+
+            // Update UI
+            updateUserInterface();
+            closeTradeModal();
+        }
+
+        function closeTradeModal() {
+            document.getElementById('tradeModal').style.display = 'none';
+            document.getElementById('tradeAmount').value = '';
+            currentTrade = null;
+        }
+
+        // Deposit functions
+        function openDepositModal() {
+            document.getElementById('depositModal').style.display = 'flex';
+        }
+
+        function executeDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            currentUser.balance += amount;
+            users[currentUser.email] = currentUser;
+            localStorage.setItem('cryptoUsers', JSON.stringify(users));
+
+            updateUserInterface();
+            closeDepositModal();
+            alert(`Successfully deposited $${amount}`);
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').style.display = 'none';
+            document.getElementById('depositAmount').value = '';
+        }
+
+        // Navigation functionality
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const views = ['marketView', 'portfolioView', 'adminView'];
+
+        navButtons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                // Update active nav button
+                navButtons.forEach(b => {
+                    b.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+                    b.classList.add('text-gray-500');
+                });
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+
+                // Show corresponding view
+                views.forEach((view, i) => {
+                    const element = document.getElementById(view);
+                    if (element) {
+                        element.style.display = i === index ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Populate crypto table
+        function populateCryptoTable() {
+            const tableBody = document.getElementById('cryptoTable');
+            tableBody.innerHTML = '';
+
+            cryptoData.forEach(crypto => {
+                const changeClass = crypto.change >= 0 ? 'text-green-600' : 'text-red-600';
+                const changeSymbol = crypto.change >= 0 ? '+' : '';
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 ${crypto.color} rounded-full flex items-center justify-center text-white text-xs font-bold">${crypto.icon}</div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">${crypto.name}</div>
+                                <div class="text-sm text-gray-500">${crypto.symbol}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$${crypto.price.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${changeClass}">${changeSymbol}${crypto.change.toFixed(2)}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${crypto.marketCap}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${crypto.volume}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button onclick="openTradeModal(cryptoData.find(c => c.symbol === '${crypto.symbol}'), 'Buy')" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors mr-2">Buy</button>
+                        <button onclick="openTradeModal(cryptoData.find(c => c.symbol === '${crypto.symbol}'), 'Sell')" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300 transition-colors">Sell</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Real-time price updates simulation
+        function updatePrices() {
+            cryptoData.forEach(crypto => {
+                const changePercent = (Math.random() - 0.5) * 2; // Random change between -1% and +1%
+                crypto.price = Math.max(0.01, crypto.price * (1 + changePercent / 100));
+                crypto.change = crypto.change + (Math.random() - 0.5) * 0.5;
+            });
+            populateCryptoTable();
+            if (currentUser) {
+                updatePortfolioView();
+            }
+        }
+
+        // Event listeners
+        document.getElementById('showSignup').addEventListener('click', showSignup);
+        document.getElementById('showLogin').addEventListener('click', showLogin);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('depositBtn').addEventListener('click', openDepositModal);
+
+        // Form submissions
+        document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (login(email, password)) {
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                updateUserInterface();
+                populateCryptoTable();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        document.getElementById('signupFormElement').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const initialDeposit = document.getElementById('initialDeposit').value;
+            
+            if (signup(name, email, password, initialDeposit)) {
+                if (login(email, password)) {
+                    document.getElementById('authModal').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    updateUserInterface();
+                    populateCryptoTable();
+                }
+            }
+        });
+
+        // Trade modal events
+        document.getElementById('tradeAmount').addEventListener('input', calculateTradeAmount);
+        document.getElementById('confirmTradeBtn').addEventListener('click', executeTrade);
+        document.getElementById('cancelTradeBtn').addEventListener('click', closeTradeModal);
+
+        // Deposit modal events
+        document.getElementById('confirmDepositBtn').addEventListener('click', executeDeposit);
+        document.getElementById('cancelDepositBtn').addEventListener('click', closeDepositModal);
+
+        // Admin price update functionality
+        document.getElementById('updatePricesBtn').addEventListener('click', () => {
+            const btcPrice = parseFloat(document.getElementById('btcPrice').value);
+            const ethPrice = parseFloat(document.getElementById('ethPrice').value);
+            const adaPrice = parseFloat(document.getElementById('adaPrice').value);
+
+            // Update the crypto data
+            cryptoData[0].price = btcPrice; // Bitcoin
+            cryptoData[1].price = ethPrice; // Ethereum
+            cryptoData[2].price = adaPrice; // Cardano
+
+            populateCryptoTable();
+            updatePortfolioView();
+            
+            // Show success message
+            const btn = document.getElementById('updatePricesBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Updated!';
+            btn.classList.add('bg-green-600');
+            btn.classList.remove('bg-blue-600');
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-blue-600');
+            }, 2000);
+        });
+
+        // Initialize portfolio chart
+        function initPortfolioChart() {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: [1000, 1200, 1100, 1500, 1800, 2000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize portfolio chart when portfolio view is first shown
+        document.getElementById('portfolioBtn').addEventListener('click', () => {
+            setTimeout(initPortfolioChart, 100);
+        }, { once: true });
+
+        // Start real-time updates every 3 seconds
+        setInterval(updatePrices, 3000);
+
+        // Create default admin user if doesn't exist
+        if (!users['admin@cryptotrade.com']) {
+            users['admin@cryptotrade.com'] = {
+                name: 'Admin',
+                email: 'admin@cryptotrade.com',
+                password: 'admin123',
+                balance: 100000,
+                holdings: {},
+                isAdmin: true,
+                joinDate: new Date().toISOString()
+            };
+            localStorage.setItem('cryptoUsers', JSON.stringify(users));
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'964fd7e1f6bae57b',t:'MTc1MzQ5MDQwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+          </html>
